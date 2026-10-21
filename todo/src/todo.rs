@@ -11,8 +11,4 @@ impl Todo {
     pub fn invert_completed(&mut self) {
         self.is_complete = !self.is_complete;
     }
-
-    pub fn update_task(&mut self, new_task: String) {
-        self.task = new_task;
-    }
 }

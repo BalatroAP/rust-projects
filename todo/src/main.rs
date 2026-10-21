@@ -1,4 +1,4 @@
-use std::{ env, fs::File, io::{ Read, Write } };
+use std::{ env, fs::{ self, File }, io::{ Read, Write } };
 use console::Style;
 
 const FILE_NAME: &str = "./todos.txt";
@@ -8,7 +8,7 @@ fn main() {
     let arguments: Vec<String> = env::args().collect();
     let strike = Style::new().strikethrough();
 
-    let todos = get_todos();
+    let mut todos = get_todos();
 
     if arguments.len() > 1 {
         let command = arguments[1].as_str();
@@ -22,15 +22,27 @@ fn main() {
                     }
                 }
             }
-            "done" => {}
+            "done" => {
+                for idx in 0..todos.len() {
+                    if args.contains(&(idx + 1).to_string()) {
+                        match todos.get(idx) {
+                            Some(_) => update_todo_is_complete(&mut todos[idx]),
+                            None => (),
+                        };
+                    }
+                }
+
+                overwrite_file_new_data(todos);
+            }
             _ => {}
         }
     } else {
-        for todo in todos {
+        println!("Current Task: ");
+        for (idx, todo) in todos.iter().enumerate() {
             if todo.is_complete {
-                println!("Task: {}", strike.apply_to(todo.task));
+                println!("{}: {}", idx + 1, strike.apply_to(&todo.task));
             } else {
-                println!("Task: {}", todo.task);
+                println!("{}: {}", idx + 1, todo.task);
             }
         }
     }
@@ -47,8 +59,29 @@ fn add_todo_to_file(todo_content: String) {
     ).unwrap();
 }
 
-fn update_todo_is_complete(id: u32) {}
-fn delete_todo(id: u32) {}
+fn overwrite_file_new_data(todos: Vec<todo::Todo>) {
+    let file_todos: Vec<String> = todos
+        .iter()
+        .map(|todo| {
+            let mut todo_file_string = String::new();
+            match todo.is_complete {
+                true => todo_file_string.push_str("[x] "),
+                false => todo_file_string.push_str("[] "),
+            }
+            todo_file_string.push_str(todo.task.as_str());
+            todo_file_string
+        })
+        .collect();
+
+    match fs::write(FILE_NAME, file_todos.join("\n")) {
+        Ok(_) => (),
+        Err(_) => (),
+    };
+}
+
+fn update_todo_is_complete(todo: &mut todo::Todo) {
+    todo.invert_completed();
+}
 
 fn get_file_content() -> Vec<String> {
     let mut file = match File::open(FILE_NAME) {
