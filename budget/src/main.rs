@@ -17,13 +17,11 @@ impl Budget {
     }
 }
 
-fn main() -> Result<(), Error> {
+#[tokio::main]
+async fn main() -> Result<(), Error> {
     dotenv::dotenv().ok();
-    let mut client = Client::connect(dotenv::var("DATABASE_URL").unwrap().as_str(), NoTls)?;
-
-    display_table(&mut client, String::from("new_table"))?;
-    remove_transaction(&mut client, String::from("new_table"), 1)?;
-    display_table(&mut client, String::from("new_table"))?;
+    // let mut client = Client::connect(dotenv::var("DATABASE_URL").unwrap().as_str(), NoTls)?;
+    println!("Listening on http://localhost:3000");
     Ok(())
 }
 
